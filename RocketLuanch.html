@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket Blast-off with Astronaut</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000; /* Black background for space */
+            text-align: center;
+        }
+
+        .countdown-container {
+            background-color: #f0f0f0;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin: 20px auto;
+            width: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #countdown {
+            font-size: 3em;
+            font-weight: bold;
+            color: #18a8b3; /* Countdown text color */
+        }
+
+        .rocket {
+            font-size: 3em;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .astronaut {
+            font-size: 2em;
+            position: absolute;
+            bottom: 10px;
+            left: 10%;
+            animation: walk 5s forwards; /* Walk to the rocket */
+        }
+
+        @keyframes walk {
+            0% {
+                left: 10%;
+            }
+            100% {
+                left: 45%; /* Position in front of the rocket */
+                opacity: 0; /* Disappear when reaching the rocket */
+            }
+        }
+
+        .smoke {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(128, 128, 128, 0.5);
+            border-radius: 50%;
+            opacity: 0;
+            animation: smoke 1.5s infinite;
+        }
+
+        .moon {
+            position: absolute;
+            top: 30px;
+            right: 100px;
+            width: 150px;
+            height: 150px;
+            background-color: #ddd;
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+            animation: glow 2s infinite alternate ease-in-out;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            width: 3px;
+            height: 3px;
+            opacity: 0.8;
+            animation: twinkle 5s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+            100% { opacity: 0.8; }
+        }
+
+        @keyframes blastoff {
+            0% {
+                transform: translateY(0) translateX(-50%);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-90vh) translateX(-50%); /* Rocket flies straight up */
+                opacity: 1;
+            }
+        }
+
+        @keyframes land {
+            0% {
+                transform: translateY(-90vh) translateX(-50%);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-30px) translateX(-50%); /* Rocket lands softly */
+                opacity: 1;
+            }
+        }
+
+        .flying {
+            animation: blastoff 5s linear forwards, land 2s 5s forwards; /* Fly up, then softly land */
+        }
+
+        @keyframes smoke {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.9);
+            }
+        }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: rotatePlanet 20s infinite linear;
+            overflow: hidden;
+        }
+
+        .planet::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150%;
+            height: 150%;
+            border: 5px solid rgba(255, 255, 255, 0.5); /* Ring around the planet */
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes rotatePlanet {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .asteroid {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: gray;
+            border-radius: 50%;
+            animation: float 10s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            100% {
+                transform: translateY(-200vh) translateX(300vw);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="countdown-container">
+        <h2>Countdown Timer</h2>
+        <div id="countdown">5d 00h 00m 00s</div>
+    </div>
+
+    <div class="astronaut" id="astronaut">👨‍🚀</div>
+    <div class="rocket" id="rocket">🚀</div>
+    <div class="smoke" id="smoke1"></div>
+    <div class="smoke" id="smoke2"></div>
+    <div class="moon"></div>
+
+    <script>
+        function createStars() {
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement("div");
+                star.classList.add("star");
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                document.body.appendChild(star);
+            }
+        }
+
+        function createPlanets() {
+            const colors = ['#ffcc00', '#00ccff', '#ff6699', '#66ff66', '#cc99ff'];
+            for (let i = 0; i < 5; i++) {
+                const planet = document.createElement("div");
+                planet.classList.add("planet");
+                planet.style.width = `${Math.random() * 100 + 50}px`;
+                planet.style.height = planet.style.width;
+                planet.style.backgroundColor = colors[i % colors.length];
+                planet.style.left = `${Math.random() * 100}vw`;
+                planet.style.top = `${Math.random() * 50 + 30}vh`;
+                document.body.appendChild(planet);
+            }
+        }
+
+        function createAsteroids() {
+            for (let i = 0; i < 10; i++) {
+                const asteroid = document.createElement("div");
+                asteroid.classList.add("asteroid");
+                asteroid.style.left = `${Math.random() * 100}vw`;
+                asteroid.style.top = `${Math.random() * 100}vh`;
+                asteroid.style.animationDuration = `${Math.random() * 5 + 5}s`;
+                document.body.appendChild(asteroid);
+            }
+        }
+    </script>
+
+    <audio id="countdown-sound" src="https://assets.mixkit.co/sfx/download/mixkit-game-countdown-analog-909.wav"></audio>
+    <audio id="launch-sound" src="https://www.youtube.com/watch?v=j0zUm9NquMY"></audio> <!-- Rocket launch sound -->
+    <!-- rocket launch sound -->
+    <audio id="rocket-sound" src="https://assets.mixkit.co/sfx/download/mixkit-rocket-ignition-1489.wav"></audio>
+
+    <script>
+        function playSound(soundId) {
+            const sound = document.getElementById(soundId);
+            sound.play();
+        }
+
+        function startBlastoff() {
+            const rocket = document.getElementById("rocket");
+            const smoke1 = document.getElementById("smoke1");
+            const smoke2 = document.getElementById("smoke2");
+
+            playSound('launch-sound'); // Play rocket launch sound
+
+            rocket.classList.add("flying");
+            smoke1.style.opacity = 1;
+            smoke2.style.opacity = 1;
+
+            setInterval(() => {
+                const rocketRect = rocket.getBoundingClientRect();
+                smoke1.style.left = `${rocketRect.left}px`;
+                smoke1.style.top = `${rocketRect.bottom}px`;
+                smoke2.style.left = `${rocketRect.left + 20}px`;
+                smoke2.style.top = `${rocketRect.bottom + 10}px`;
+            }, 50);
+        }
+
+        function startCountdown() {
+            const countdownElement = document.getElementById("countdown");
+            const countDownDate = new Date().getTime() + 5000; // 5-second countdown
+
+            playSound('countdown-sound');
+
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = countDownDate - now;
+
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                countdownElement.innerHTML = `0d 00h 00m ${seconds}s`;
+
+                if (distance < 0) {
+                    clearInterval(interval);
+                    countdownElement.innerHTML = "Liftoff!";
+                    startBlastoff();
+                }
+            }, 1000);
+        }
+
+        window.onload = function() {
+            createStars();
+            createPlanets();
+            createAsteroids();
+
+            // Start the astronaut walking and then the countdown
+            setTimeout(() => {
+                startCountdown();
+            }, 5000); // Start countdown after astronaut finishes walking
+        };
+    </script>
+
+</body>
+</html>
